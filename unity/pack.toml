@@ -1,0 +1,63 @@
+[pack]
+id = "unity"
+name = "Unity"
+version = "0.1.0"
+core_handler_requirements = ["unity_compile", "line_diagnostics", "regex_extract"]
+
+[detect]
+required_files = ["ProjectSettings/ProjectVersion.txt", "Assets"]
+ignored_dirs = ["Library", "Temp", "Logs", "obj", "Build", "Builds", ".vs", ".idea"]
+max_indexed_file_kb = 500
+
+[context]
+core = "context/core.md"
+conventions = "context/conventions.md"
+canonical_example = "examples/monobehaviour.md"
+lean_stub = "context/lean.md"
+core_token_cap = 600
+
+[diagnostics]
+corrections_dir = "corrections"
+knowledge_dir = "knowledge"
+fallback_correction = "corrections/generic-roslyn-error.md"
+
+[verify]
+# The loop treats a green `unity_compile` (ok, zero diagnostics) as task
+# completion. Generic: any pack names its own verify tool here.
+tool = "unity_compile"
+success_means = "no_diagnostics"
+
+# Script-backed tools. The Unity platform logic lives here as Lua, not in the
+# binary — the core registers these generically via `register_pack_tools`.
+[[tools]]
+name = "unity_compile"
+description = """Compile the Unity project in batch mode and return structured Roslyn diagnostics.
+WHEN TO USE: only when the user reports a compile error, or AFTER a code change that might affect compilation (to verify it).
+DO NOT call to 'see if everything is fine' or to explore — compilation is expensive (10–60s). For structure, call unity_graph."""
+script = "scripts/compile.lua"
+category = "run"
+
+[[tools]]
+name = "unity_graph"
+description = """Query the precomputed Unity scene/prefab/script graph (built from .meta + .unity + .prefab YAML — no inference).
+WHEN TO USE: the FIRST tool when the user asks about a Unity project's structure. A `summary` is already in the bootstrap; call this to drill into a specific scene, script, or prefab, or to list orphans.
+Args: scope (summary|scene|script|prefab|orphans), name (filename/class/path fragment for scene|script|prefab).
+DO NOT read_file on .unity/.prefab/.asset — use this instead."""
+script = "scripts/graph.lua"
+category = "read"
+
+# Turn-0 bootstrap: surface the project graph digest so the model never
+# re-discovers structure. Skipped automatically if the tool is unavailable.
+[[bootstrap]]
+tool = "unity_graph"
+args = { scope = "summary" }
+label = "Unity scene/script/prefab graph"
+
+[skills]
+dir = "skills"
+max_loaded_concurrent = 4
+per_skill_token_cap = 500
+
+[read]
+# Large Unity YAML blobs the agent should not read raw (use unity_graph).
+opaque_extensions = ["asset", "prefab"]
