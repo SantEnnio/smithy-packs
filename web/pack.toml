@@ -1,0 +1,12 @@
+[pack]
+id = "web"
+name = "Web (HTML & presentations)"
+version = "0.1.0"
+
+[detect]
+required_files = []
+ignored_dirs = ["node_modules", ".git", "dist", ".chrome-tmp"]
+
+[context]
+core = "context/core.md"
+lean_stub = "context/lean.md"

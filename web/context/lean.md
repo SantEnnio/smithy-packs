@@ -1,0 +1,1 @@
+Web project: write small self-contained HTML/CSS (no external deps). For PDF, render the HTML with the system Google Chrome headless (`--headless=new --print-to-pdf`). Do NOT re-explore — the OBSERVED list shows the layout.
