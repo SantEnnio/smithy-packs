@@ -92,14 +92,24 @@ Apply them to every file you write.
   opt it out of static prerender with `export const dynamic = "force-dynamic";`
   (or `export const revalidate = 0;`) at the top of that `page.tsx`.
 
-## Admin CRUD layout — one route per action, not one mega-page (convention)
-- Do NOT cram create + every row's edit form into a single `/admin` page. Use a
-  route per action so each has its own URL, server action, and acceptance:
-  - `/admin` — list of posts with Edit links and a Delete button per row.
-  - `/admin/new` — the create form (its own page + Server Action).
-  - `/admin/[id]/edit` — the edit form for one post (reads the post via async
-    `params`, pre-fills, submits to an update Server Action; `notFound()` if the
-    id is missing).
-- Delete stays inline on the list row (a `<form action={deleteAction}>` with a
-  hidden id; the confirm is a `"use client"` child button). Keep mutations as
-  Server Actions and `revalidatePath()` after each (see Data freshness).
+## Admin CRUD layout — one route per action (REQUIRED, not optional)
+This is a HARD requirement, not a style preference. A single page holding the
+list + the create form + an edit form for every row is FORBIDDEN — do not build
+it, even though it would "work". The admin MUST be split into exactly these three
+route files (create each as its own `page.tsx`):
+1. `app/admin/page.tsx` — ONLY the list: each row shows the title with an `Edit`
+   link to `/admin/<id>/edit` and an inline Delete `<form>` (confirm via a
+   `"use client"` child button). NO create form, NO edit form on this page.
+2. `app/admin/new/page.tsx` — ONLY the create form. Its own page + a create
+   Server Action; on success `redirect("/admin")`.
+3. `app/admin/[id]/edit/page.tsx` — ONLY the edit form for the ONE post named by
+   `params` (await `params`, load the post, `notFound()` if missing, pre-fill the
+   fields). Its own update Server Action; on success `redirect("/admin")`.
+
+Checklist before you finish the admin: all THREE files above exist, the list page
+contains no `<input>`/`<textarea>` for creating/editing, and `/admin/new` +
+`/admin/[id]/edit` are reachable links from the list. If any is missing, the admin
+is INCOMPLETE — add the missing route.
+
+Keep every mutation a Server Action and `revalidatePath()` the public pages after
+each (see Data freshness).
