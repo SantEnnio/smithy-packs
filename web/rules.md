@@ -70,3 +70,36 @@ Apply them to every file you write.
 - Protect a route by checking the cookie server-side (in the page/layout or
   middleware) and `redirect("/login")` when absent. A public page must NOT gate
   its own content behind that check.
+
+## Data freshness — pages that read the DB must reflect writes (invariant)
+- App Router **statically prerenders** a page by default. A page that reads the
+  DB (`getAllPosts()`, a list/home) will be frozen at build time and will NOT
+  show rows inserted/edited/deleted afterwards — it compiles and serves, but
+  shows **stale data**. This is a runtime-behaviour bug.
+- After ANY mutation in a Server Action, call `revalidatePath()` (from
+  `next/cache`) for every route that displays the changed data — at least the
+  list/home and the affected detail page:
+  ```tsx
+  "use server";
+  import { revalidatePath } from "next/cache";
+  export async function createPost(formData: FormData) {
+    db.prepare("INSERT INTO posts ...").run(/* ... */);
+    revalidatePath("/");        // public list
+    revalidatePath("/admin");   // admin list
+  }
+  ```
+- If a page must always be live (e.g. an admin list reflecting external writes),
+  opt it out of static prerender with `export const dynamic = "force-dynamic";`
+  (or `export const revalidate = 0;`) at the top of that `page.tsx`.
+
+## Admin CRUD layout — one route per action, not one mega-page (convention)
+- Do NOT cram create + every row's edit form into a single `/admin` page. Use a
+  route per action so each has its own URL, server action, and acceptance:
+  - `/admin` — list of posts with Edit links and a Delete button per row.
+  - `/admin/new` — the create form (its own page + Server Action).
+  - `/admin/[id]/edit` — the edit form for one post (reads the post via async
+    `params`, pre-fills, submits to an update Server Action; `notFound()` if the
+    id is missing).
+- Delete stays inline on the list row (a `<form action={deleteAction}>` with a
+  hidden id; the confirm is a `"use client"` child button). Keep mutations as
+  Server Actions and `revalidatePath()` after each (see Data freshness).
