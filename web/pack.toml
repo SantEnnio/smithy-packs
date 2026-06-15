@@ -4,7 +4,8 @@ name = "Web (HTML & presentations)"
 version = "0.1.0"
 
 [detect]
-required_files = []
+# Match a web project without being a catch-all: any one of these markers.
+any_of = ["package.json", "index.html"]
 ignored_dirs = ["node_modules", ".git", "dist", ".chrome-tmp"]
 
 [context]
