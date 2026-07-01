@@ -6,8 +6,74 @@ version = "0.1.0"
 [detect]
 # Match a web project without being a catch-all: any one of these markers.
 any_of = ["package.json", "index.html"]
-ignored_dirs = ["node_modules", ".git", "dist", ".chrome-tmp"]
+ignored_dirs = ["node_modules", ".git", "dist", ".chrome-tmp", "vendor"]
 
 [context]
 core = "context/core.md"
 lean_stub = "context/lean.md"
+
+# Structural extractor for the graph-native "Attuale" map: resolves JS/TS
+# relative imports and Laravel PHP `use App\...` into file->file `imports` edges.
+# Invoked on demand with scope:"graph" (no [[bootstrap]]).
+[[tools]]
+name = "web_graph"
+description = """Query the web project's import graph (JS/TS relative imports + Laravel PHP `use App\\...`), resolved deterministically to file dependencies.
+WHEN TO USE: the FIRST tool when the user asks about a web project's structure or who-depends-on-what. Args: scope (graph)."""
+script = "scripts/graph.lua"
+category = "read"
+
+[[toolchains]]
+id = "php-laravel"
+label = "PHP / Laravel"
+detect_any = ["artisan", "composer.json"]
+requires = ["php>=8.2", "composer", "node>=18", "npm"]
+verify = [
+  "composer install",
+  "php artisan test",
+  "php artisan route:list"
+]
+
+[[toolchains]]
+id = "php-laravel-postgres"
+label = "Laravel + PostgreSQL"
+detect_any = ["artisan", "composer.json"]
+requires = ["php>=8.2", "composer", "node>=18", "npm", "psql"]
+verify = [
+  "composer install",
+  "php artisan migrate --force",
+  "php artisan test",
+  "php artisan route:list"
+]
+
+[[toolchains]]
+id = "node-next"
+label = "Node / Next.js"
+detect_any = ["next.config.js", "next.config.mjs", "app", "pages"]
+requires = ["node>=18", "npm"]
+verify = [
+  "npm install",
+  "npm run build"
+]
+
+[[toolchains]]
+id = "node-vite"
+label = "Node / Vite"
+detect_any = ["vite.config.js", "vite.config.ts", "index.html", "package.json"]
+requires = ["node>=18", "npm"]
+verify = [
+  "npm install",
+  "npm run build"
+]
+
+[[dev_containers]]
+id = "php-laravel-postgres"
+label = "PHP 8.3 + Composer + PostgreSQL"
+toolchain = "php-laravel-postgres"
+image = "composer:2"
+services = ["postgres"]
+ports = [8000]
+verify = [
+  "composer install",
+  "php artisan migrate --force",
+  "php artisan test"
+]

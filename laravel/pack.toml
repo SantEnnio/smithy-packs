@@ -1,0 +1,62 @@
+[pack]
+id = "laravel"
+name = "PHP / Laravel"
+version = "0.1.0"
+
+[detect]
+# A real Laravel app always has `artisan` at the root; require composer.json too
+# so this never fires for a generic Composer library. Sorts before "web", so a
+# Laravel app that also ships a package.json (Inertia/Vite) still gets THIS pack.
+required_files = ["artisan", "composer.json"]
+ignored_dirs = [
+  "vendor", "node_modules", ".git", "storage", "bootstrap/cache",
+  "public/build", "public", ".phpunit.cache",
+]
+
+[context]
+core = "context/core.md"
+
+# Structural extractor for the graph-native "Attuale" map: Laravel-aware —
+# routes → controllers, controllers → models (use) + views (view('a.b')),
+# blade @extends/@include between templates. Invoked on demand with the scope.
+[[tools]]
+name = "laravel_graph"
+description = """Query the Laravel app's structure graph: routes→controllers→models/views, resolved by convention (routes/*.php, app/Http/Controllers, app/Models, resources/views/*.blade.php) + PSR-4.
+WHEN TO USE: the FIRST tool when the user asks about a Laravel project's structure or who-calls-what. Args: scope (graph)."""
+script = "scripts/graph.lua"
+category = "read"
+
+[[toolchains]]
+id = "php-laravel"
+label = "PHP / Laravel"
+detect_any = ["artisan", "composer.json"]
+requires = ["php>=8.2", "composer"]
+verify = [
+  "composer install",
+  "php artisan test",
+  "php artisan route:list",
+]
+
+[[toolchains]]
+id = "php-laravel-postgres"
+label = "Laravel + PostgreSQL"
+detect_any = ["artisan"]
+requires = ["php>=8.2", "composer", "psql"]
+verify = [
+  "composer install",
+  "php artisan migrate --force",
+  "php artisan test",
+]
+
+[[dev_containers]]
+id = "php-laravel-postgres"
+label = "PHP 8.3 + Composer + PostgreSQL"
+toolchain = "php-laravel-postgres"
+image = "composer:2"
+services = ["postgres"]
+ports = [8000]
+verify = [
+  "composer install",
+  "php artisan migrate --force",
+  "php artisan test",
+]

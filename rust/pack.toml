@@ -1,0 +1,20 @@
+[pack]
+id = "rust"
+name = "Rust"
+version = "0.1.0"
+
+[detect]
+# A Cargo manifest marks a Rust project. Specific enough not to be a catch-all
+# (an empty rule set is never auto-selected). `target/` is build output.
+required_files = ["Cargo.toml"]
+ignored_dirs = ["target"]
+
+# Script-backed structural extractor for the graph-native "Attuale" map. The map
+# calls it with `scope:"graph"` to overlay real `use`/`mod` dependency edges on
+# the project_tree file layout (no [[bootstrap]] — invoked on demand, not per run).
+[[tools]]
+name = "rust_graph"
+description = """Query the Rust project's structure graph: modules and cross-file `use` dependencies, resolved deterministically from `mod`/`use` declarations (no inference).
+WHEN TO USE: the FIRST tool when the user asks about a Rust project's structure or who-depends-on-what. Args: scope (graph)."""
+script = "scripts/graph.lua"
+category = "read"
