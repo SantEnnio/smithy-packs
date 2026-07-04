@@ -1,0 +1,22 @@
+# Tuned profile for google/gemma-4-e4b (Gemma 4 "E4B", ~7.5B) on the remote 4090.
+# Same reasoning-model tuning as the larger locals: generous output budget so
+# reasoning + a full file fit, effective context kept lean. Small models lean
+# hardest on explicit tool-call format examples.
+
+[model]
+id = "google/gemma-4-e4b"
+family = "gemma"
+context_length = 32768
+effective_context_length = 20000
+max_output_tokens = 7000
+chat_template = "gemma"
+
+[capability]
+needs_explicit_format_examples = true
+
+[strategy]
+temperature_base = 0.2
+
+[budget]
+max_history_tokens = 1200
+context_safety_margin = 512

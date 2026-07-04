@@ -1,0 +1,26 @@
+# Profile for deepseek/deepseek-v4-flash served via OpenRouter (openai-compat).
+#
+# DeepSeek V4 Flash is an efficiency-oriented MoE (284B total / 13B active) with
+# a 1M-token context window. Unlike the local qwen reasoning model, we are NOT
+# fighting a ~20K JIT window here — so we deliberately give history a generous
+# budget to test whether the large context removes the truncation/exhaustion
+# that was the #1 limiter on the local-model UX batteries. Tasks in the web pack
+# are small, so these ceilings are headroom, not a cost driver.
+
+[model]
+id = "deepseek/deepseek-v4-flash"
+family = "deepseek"
+context_length = 1048576
+effective_context_length = 200000
+max_output_tokens = 12000
+chat_template = "chatml"
+
+[capability]
+needs_explicit_format_examples = false
+
+[strategy]
+temperature_base = 0.2
+
+[budget]
+max_history_tokens = 24000
+context_safety_margin = 2000

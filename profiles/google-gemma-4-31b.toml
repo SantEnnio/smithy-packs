@@ -1,0 +1,22 @@
+# Tuned profile for google/gemma-4-31b (DENSE 31B) on the remote 4090.
+# Same reasoning-model tuning as the other two local models: big output budget
+# (reasoning + a full file), effective context matched to the ~20.7K LM Studio
+# JIT-loads it with, lean history. See qwen-qwen3.6-27b.toml for the rationale.
+
+[model]
+id = "google/gemma-4-31b"
+family = "gemma"
+context_length = 32768
+effective_context_length = 20000
+max_output_tokens = 7000
+chat_template = "gemma"
+
+[capability]
+needs_explicit_format_examples = true
+
+[strategy]
+temperature_base = 0.2
+
+[budget]
+max_history_tokens = 1200
+context_safety_margin = 512

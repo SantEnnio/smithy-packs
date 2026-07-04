@@ -1,0 +1,28 @@
+# Tuned profile for qwen/qwen3.6-27b served by LM Studio on the remote 4090.
+#
+# This is a REASONING model: it always emits a large reasoning_content block
+# (200-950 tokens even on trivial prompts) whose tokens count toward the output
+# budget. The stock generic default (max_output_tokens = 2048) is too small —
+# the model can exhaust its budget mid-reasoning and return empty `content`,
+# so the agent never sees a tool call. We raise the output budget to leave room
+# for reasoning PLUS a full file, while keeping the prompt/history lean (the
+# tool is built for small context windows). effective_context_length matches
+# the ~20.6K LM Studio JIT-loads it with, so the budget gate stays honest.
+
+[model]
+id = "qwen/qwen3.6-27b"
+family = "qwen"
+context_length = 32768
+effective_context_length = 20000
+max_output_tokens = 7000
+chat_template = "chatml"
+
+[capability]
+needs_explicit_format_examples = true
+
+[strategy]
+temperature_base = 0.2
+
+[budget]
+max_history_tokens = 1200
+context_safety_margin = 512
