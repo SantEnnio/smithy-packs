@@ -77,3 +77,8 @@ verify = [
   "php artisan migrate --force",
   "php artisan test"
 ]
+
+# Graph-view lenses implemented by scripts/graph.lua ("structural" overlay +
+# "functional" entity graph). The UI builds its lens selector from this.
+[graph]
+lenses = ["structural", "functional"]

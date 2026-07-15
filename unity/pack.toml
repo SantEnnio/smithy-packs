@@ -61,3 +61,8 @@ per_skill_token_cap = 500
 [read]
 # Large Unity YAML blobs the agent should not read raw (use unity_graph).
 opaque_extensions = ["asset", "prefab"]
+
+# Graph-view lenses implemented by scripts/graph.lua ("structural" overlay +
+# "functional" entity graph). The UI builds its lens selector from this.
+[graph]
+lenses = ["structural", "functional"]

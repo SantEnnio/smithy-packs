@@ -18,3 +18,8 @@ description = """Query the Rust project's structure graph: modules and cross-fil
 WHEN TO USE: the FIRST tool when the user asks about a Rust project's structure or who-depends-on-what. Args: scope (graph)."""
 script = "scripts/graph.lua"
 category = "read"
+
+# Graph-view lenses implemented by scripts/graph.lua ("structural" overlay +
+# "functional" entity graph). The UI builds its lens selector from this.
+[graph]
+lenses = ["structural", "functional"]
